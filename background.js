@@ -16,10 +16,10 @@ function connect() {
 	port.postMessage('test')
 
 	return (async () => {
-		const wait = () => new Promise(resolve => setTimeout(resolve, 100))
+		const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 		while (!connected && err === null)
-			await wait()
+			await wait(100)
 
 		port.onMessage.removeListener(onMsg)
 		port.onDisconnect.removeListener(onDisco)
