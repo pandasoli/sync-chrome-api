@@ -63,20 +63,17 @@ chrome.runtime.onMessage.addListener((msg, _, send) => {
 				return send("There's no open connection")
 
 			const foo = msg => {
-				console.log('got response')
-				chrome.runtime.onMessage.removeListener(foo)
+				port.onMessage.removeListener(foo)
 				send(msg)
 			}
-			chrome.runtime.onMessage.addListener(foo)
+			port.onMessage.addListener(foo)
 
 			try {
-				console.log('sending', msg)
 				port.postMessage(msg)
-				console.log('sent')
 				return true
 			}
 			catch (e) {
-				chrome.runtime.onMessage.removeListener(foo)
+				port.onMessage.removeListener(foo)
 				send(e.toString())
 			}
 	}
