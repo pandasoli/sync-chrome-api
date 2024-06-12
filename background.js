@@ -2,7 +2,7 @@
 let port = null
 
 function connect() {
-	const port = chrome.runtime.connectNative('com.elisoli.chrome.echoa')
+	const port = chrome.runtime.connectNative('com.elisoli.chrome.echo')
 
 	let connected = false
 	let err = null
