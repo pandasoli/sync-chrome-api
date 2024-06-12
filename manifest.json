@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Bambucito host example",
+  "version": "1.0.0",
+
+  "action": {
+		"default_popup": "index.html"
+	},
+
+	"permissions": ["nativeMessaging"],
+
+	"background": {
+		"service_worker": "background.js",
+		"type": "module"
+	}
+}
