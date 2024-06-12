@@ -1,18 +1,17 @@
+/** @type {(chrome.runtime.Port|null)} */
 let port = null
 
 function connect() {
-	const port = chrome.runtime.connectNative('com.elisoli.chrome.echoa')
+	const port = chrome.runtime.connectNative('com.elisoli.chrome.echo')
 
 	let connected = false
 	let err = null
 
-	port.onMessage.addListener(msg =>
-		msg === 'test' && (connected = true)
-	)
+	const onMsg = msg => msg === 'test' && (connected = true)
+	const onDisco = () => err = chrome.runtime.lastError.message
 
-	port.onDisconnect.addListener(() =>
-		err = chrome.runtime.lastError.message
-	)
+	port.onMessage.addListener(onMsg)
+	port.onDisconnect.addListener(onDisco)
 
 	port.postMessage('test')
 
@@ -23,6 +22,9 @@ function connect() {
 			if (!connected && err === null)
 				return setTimeout(foo, time)
 
+			port.onMessage.removeListener(onMsg)
+			port.onDisconnect.removeListener(onDisco)
+
 			if (connected) resolve([port, 'Connected'])
 			else reject([null, err])
 		}
@@ -31,35 +33,51 @@ function connect() {
 	})
 }
 
-chrome.runtime.onMessage.addListener(async (msg, _, send) => {
+chrome.runtime.onMessage.addListener((msg, _, send) => {
 	switch (msg) {
 		case 'connect':
 			if (port)
 				return send("There's alredy an open connection")
 
-			try {
-				[port, err] = await connect()
-				console.log('after await')
+			connect()
+			.then(([port_, err]) => {
+				port = port_
 				send(err)
-			}
-			catch (e) {
-				console.log('inside catch')
-				send(e[1])
-			}
-			console.log('end')
-			break
+			})
+			.catch(([_, err]) => {
+				send(err)
+			})
+
+			return true
 
 		case 'disconnect':
 			if (port === null)
 				return send("There's no open connection")
 
 			port.disconnect()
+			port = null
 			break
 
 		default:
 			if (port === null)
 				return send("There's no open connection")
 
-			port.postMessage(msg)
+			const foo = msg => {
+				console.log('got response')
+				chrome.runtime.onMessage.removeListener(foo)
+				send(msg)
+			}
+			chrome.runtime.onMessage.addListener(foo)
+
+			try {
+				console.log('sending', msg)
+				port.postMessage(msg)
+				console.log('sent')
+				return true
+			}
+			catch (e) {
+				chrome.runtime.onMessage.removeListener(foo)
+				send(e.toString())
+			}
 	}
 })

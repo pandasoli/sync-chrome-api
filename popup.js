@@ -8,10 +8,9 @@ $connect_btn.addEventListener('click', () => {
 	$err_label.innerText = 'Connecting...'
 
 	chrome.runtime.sendMessage('connect')
-	.then(err => {
-		console.log('[$connect_btn.click]', err)
+	.then(err =>
 		err && ($err_label.innerText = err)
-	})
+	)
 })
 
 $send_btn.addEventListener('click', () =>
