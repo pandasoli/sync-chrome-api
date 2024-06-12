@@ -2,7 +2,7 @@
 let port = null
 
 function connect() {
-	const port = chrome.runtime.connectNative('com.elisoli.chrome.echo')
+	const port = chrome.runtime.connectNative('com.elisoli.chrome.echoa')
 
 	let connected = false
 	let err = null
@@ -15,22 +15,18 @@ function connect() {
 
 	port.postMessage('test')
 
-	return new Promise((resolve, reject) => {
-		const time = 100
+	return (async () => {
+		const wait = () => new Promise(resolve => setTimeout(resolve, 100))
 
-		const foo = () => {
-			if (!connected && err === null)
-				return setTimeout(foo, time)
+		while (!connected && err === null)
+			await wait()
 
-			port.onMessage.removeListener(onMsg)
-			port.onDisconnect.removeListener(onDisco)
+		port.onMessage.removeListener(onMsg)
+		port.onDisconnect.removeListener(onDisco)
 
-			if (connected) resolve([port, 'Connected'])
-			else reject([null, err])
-		}
-
-		setTimeout(foo, time)
-	})
+		if (connected) return [port, 'Connected']
+		else throw [null, err]
+	})()
 }
 
 chrome.runtime.onMessage.addListener((msg, _, send) => {
