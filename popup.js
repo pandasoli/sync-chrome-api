@@ -4,25 +4,15 @@ const $send_btn = document.getElementById('send')
 const $connect_btn = document.getElementById('connect')
 const $disconnect_btn = document.getElementById('disconnect')
 
-$connect_btn.addEventListener('click', () => {
+$connect_btn.addEventListener('click', async () => {
 	$err_label.innerText = 'Connecting...'
-
-	chrome.runtime.sendMessage('connect')
-	.then(err =>
-		err && ($err_label.innerText = err)
-	)
+	$err_label.innerText = await chrome.runtime.sendMessage('connect')
 })
 
-$send_btn.addEventListener('click', () =>
-	chrome.runtime.sendMessage($text_input.value)
-	.then(err =>
-		err && ($err_label.innerText = err)
-	)
+$send_btn.addEventListener('click', async () =>
+	$err_label.innerText = await chrome.runtime.sendMessage($text_input.value)
 )
 
-$disconnect_btn.addEventListener('click', () =>
-	chrome.runtime.sendMessage('disconnect')
-	.then(err =>
-		err && ($err_label.innerText = err)
-	)
+$disconnect_btn.addEventListener('click', async () =>
+	$err_label.innerText = await chrome.runtime.sendMessage('disconnect') ?? ''
 )
