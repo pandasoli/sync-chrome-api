@@ -16,8 +16,7 @@ It creates the port, and two listeners, for messages and errors,
 and then it sends a message to test the connection.
 
 The function returns a promise (i.e. an async function that throws errors)
-that sets a timer of 100 miliseconds, check if the connection try was done,
-if not, sets the timer again.
+that keeps waiting until the connection try gets a response.
 
 > This was made because the messages and errors are not received instantly.  
 > This is a way of sleep to return the function whenever we want.
