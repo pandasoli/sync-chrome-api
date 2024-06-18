@@ -1,6 +1,6 @@
 {
 	"manifest_version": 3,
-	"name": "Bambucito host example",
+	"name": "Bambloo native-messaging-host example",
 	"version": "1.0.0",
 
 	"action": {

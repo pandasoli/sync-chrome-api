@@ -1,33 +1,27 @@
 /** @type {(chrome.runtime.Port|null)} */
 let port = null
 
-function connect() {
+const connect = () => new Promise(resolve => {
 	const port = chrome.runtime.connectNative('com.elisoli.chrome.echo')
 
-	let connected = false
-	let err = null
-
-	const onMsg = msg => msg === 'test' && (connected = true)
-	const onDisco = () => err = chrome.runtime.lastError.message
-
-	port.onMessage.addListener(onMsg)
-	port.onDisconnect.addListener(onDisco)
-
-	port.postMessage('test')
-
-	return (async () => {
-		const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-		while (!connected && err === null)
-			await wait(100)
+	const onMsg = msg => {
+		if (msg !== 'test') return
 
 		port.onMessage.removeListener(onMsg)
 		port.onDisconnect.removeListener(onDisco)
+		resolve([ port, 'Connected' ])
+	}
 
-		if (connected) return [port, 'Connected']
-		else throw [null, err]
-	})()
-}
+	const onDisco = () => {
+		port.onMessage.removeListener(onMsg)
+		port.onDisconnect.removeListener(onDisco)
+		resolve([ null, chrome.runtime.lastError.message ])
+	}
+
+	port.onMessage.addListener(onMsg)
+	port.onDisconnect.addListener(onDisco)
+	port.postMessage('test')
+})
 
 chrome.runtime.onMessage.addListener((msg, _, send) => {
 	switch (msg) {
@@ -38,9 +32,6 @@ chrome.runtime.onMessage.addListener((msg, _, send) => {
 			connect()
 			.then(([port_, err]) => {
 				port = port_
-				send(err)
-			})
-			.catch(([_, err]) => {
 				send(err)
 			})
 
